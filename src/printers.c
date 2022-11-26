@@ -20,7 +20,7 @@ void print_total_distance(t_arrays arrays) {
             mx_printstr(" + ");
         }
         mx_printstr(" = ");
-    
+
         mx_printint(sum);
         mx_printchar('\n');
     }
@@ -144,6 +144,7 @@ void printing_handle(t_islands_list *head) {
         while (true) {
             int total_len = -1;
             arrays.looking_name = ptr->name;
+            arrays.looking_index = ptr->index;
             set_array_by_default(arrays.already_has_route, HAS_ROUTE_LEN);
             set_array_by_default(arrays.a_h_r_helper, HAS_ROUTE_LEN);
             set_array_by_default(arrays.all_distances, HAS_ROUTE_LEN);

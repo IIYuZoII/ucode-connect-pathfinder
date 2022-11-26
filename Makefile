@@ -8,8 +8,7 @@ OBJ = $(addprefix obj/,$(notdir $(SRC:.c=.o)))
 all: $(SRC) $(NAME)
 
 $(NAME): create_objdir $(OBJ)
-# @make -C libmx
-	@cd libmx && make all
+	@make -sC libmx
 	@$(CC) $(FLAGS) $(OBJ) -Llibmx -lmx -o $(NAME)
 
 obj/%.o: src/%.c
@@ -23,7 +22,7 @@ create_objdir:
 
 uninstall: clean
 	@rm -rf $(NAME)
-	@cd libmx && make uninstall
+	@make -sC libmx uninstall
 
 reinstall: uninstall all
 

@@ -25,6 +25,7 @@ typedef struct s_arrays {
     int start_index;
     int checked_islands[HAS_ROUTE_LEN];
     char *looking_name;
+    int looking_index;
     int current_distance;
 
     int shortest_distance;

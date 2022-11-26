@@ -1,6 +1,5 @@
 #include "../inc/pathfinder.h"
 
-
 int get_real_count_of_islands(t_islands_list *head) {
     int count = 0;
     while (true) {
@@ -19,7 +18,6 @@ int get_sum_of_distances(int arr[HAS_ROUTE_LEN], int len_arr) {
     return res;
 }
 
-
 int get_free_pos(t_islands_list *node) {
     int last_pos = 0;
     for (int i = 0; i < HAS_ROUTE_LEN; i++) {
@@ -29,7 +27,6 @@ int get_free_pos(t_islands_list *node) {
     }
     return last_pos;
 }
-
 
 t_islands_list *get_island_by_index(t_islands_list *head, int index) {
     while (true) {
@@ -78,9 +75,6 @@ int g_l_f_p_i_a(int arr[HAS_ROUTE_LEN]) {
     return last_pos;
 }
 
-
-
-
 /**
  * @brief Checks first line
  *
@@ -88,7 +82,7 @@ int g_l_f_p_i_a(int arr[HAS_ROUTE_LEN]) {
  */
 int get_first_line(char *str) {
     int index = mx_get_char_index(str, '\n');
-    if (index == -1) {
+    if (index <= 0) {
         return -1;
     }
     char *buff = mx_strndup(str, index);
@@ -103,8 +97,6 @@ int get_first_line(char *str) {
     return res;
 }
 
-
-
 // DONE
 int get_count_of_routs(t_islands_list *node) {
     int res = 0;
@@ -113,8 +105,6 @@ int get_count_of_routs(t_islands_list *node) {
     }
     return res;
 }
-
-
 
 // DONE
 int get_last_free_pos_in_arr(int arr[HAS_ROUTE_LEN]) {
@@ -125,8 +115,6 @@ int get_last_free_pos_in_arr(int arr[HAS_ROUTE_LEN]) {
     return last_pos;
 }
 
-
-
 int get_dist_from_a_to_b(int index_a, int index_b, t_arrays array) {
     t_islands_list *ptr_a = get_island_by_index(array.ptr_on_start, index_a);
     for (int i = 0; i < HAS_ROUTE_LEN; i++) {
@@ -136,7 +124,6 @@ int get_dist_from_a_to_b(int index_a, int index_b, t_arrays array) {
     }
     return 0;
 }
-
 
 // mx_itoa doesn't work inside the func error_printing_handle
 // so I have to use this crutch... I know that it seems so bad...
@@ -164,16 +151,39 @@ char *get_digit_in_char(int digit) {
         case 9:
             return ("9");
         default:
-            return("0");
+            return ("0");
     }
 }
 
-
-
+bool check_have_we_straight_rout(t_islands_list *island, t_arrays arrays) {
+    for (int i = 0; i < get_free_pos(island); i++) {
+        if (island->has_route[i] == arrays.looking_index) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void get_shortest_path(t_islands_list *head, t_arrays arrays, int j,
                        int prev_index, int *total_len) {
     int routes = get_free_pos(head);
+
+    int pos = g_l_f_p_i_a(arrays.all_distances);
+    if (prev_index != head->index) {
+        int dist = 0;
+        dist = get_dist_from_a_to_b(prev_index, head->index, arrays);
+        arrays.all_distances[pos] = dist;
+    }
+
+    if (check_have_we_straight_rout(head, arrays)) {
+        int last_pos = g_l_f_p_i_a(arrays.all_distances);
+        int sum = get_sum_of_distances(arrays.all_distances, last_pos);
+        sum += get_dist_from_a_to_b(head->index, arrays.looking_index, arrays);
+        if (sum <= *total_len || *total_len == -1) {
+            *total_len = sum;
+            return;
+        }
+    }
 
     if (is_checked(arrays, head->index)) {
         return;
@@ -186,14 +196,23 @@ void get_shortest_path(t_islands_list *head, t_arrays arrays, int j,
 
     if (check_if_this_rout_longer(head, arrays, prev_index)) {
         return;
+        int last_pos = g_l_f_p_i_a(arrays.all_distances);
+        int sum = get_sum_of_distances(arrays.all_distances, last_pos);
+        if (sum <= *total_len || *total_len == -1) {
+            *total_len = sum;
+        }
+        else {
+            return;
+        }
     }
 
     if (prev_index != head->index &&
         mx_strcmp(head->name, arrays.looking_name) == 0) {
         int last_pos = g_l_f_p_i_a(arrays.all_distances);
         int sum = get_sum_of_distances(arrays.all_distances, last_pos);
-        if (*total_len == -1 || sum < *total_len) {
+        if (sum <= *total_len || *total_len == -1) {
             *total_len = sum;
+            return;
         }
     }
 
@@ -217,8 +236,6 @@ void get_shortest_path(t_islands_list *head, t_arrays arrays, int j,
     if (j == 0) j++;
 
     for (int i = 0; i < routes; i++) {
-        int pos = g_l_f_p_i_a(arrays.all_distances);
-        arrays.all_distances[pos] = head->distance[i];
         t_islands_list *temp_ptr =
             get_island_by_index(arrays.ptr_on_start, head->has_route[i]);
         if (temp_ptr == NULL) {
@@ -228,12 +245,8 @@ void get_shortest_path(t_islands_list *head, t_arrays arrays, int j,
             continue;
         }
         get_shortest_path(temp_ptr, arrays, j - 1, head->index, total_len);
-        arrays.all_distances[pos] = -1;
     }
+
     set_index_in_arr_to_default(arrays, head->index);
+    arrays.all_distances[pos] = -1;
 }
-
-
-
-
-

@@ -11,6 +11,64 @@ static bool find_sub_in_str(const char *haystack, const char *needle) {
     return false;
 }
 
+bool check_bridges_dup_in_str(char *str, const char *name_1,
+                              const char *name_2) {
+
+
+    char *ptr = str;
+    char *temp = NULL;
+    int index_of_end_line = 0;
+
+    char *name = NULL;
+    char *name2 = NULL;
+    while (true) {
+        char *clean_up_temp = NULL;
+
+        ptr = mx_strchr(ptr, '\n');  //сдвинули строку на следующую
+        if (ptr != NULL) {
+            ptr++;
+        }
+        else {
+            break;
+        }
+
+        //взяли строку
+        temp = NULL;
+        index_of_end_line = mx_get_char_index(ptr, '\n');
+        if (index_of_end_line == -1) {
+            break;
+        }
+        else {
+            temp = mx_strndup(ptr, index_of_end_line);
+            clean_up_temp = temp;
+        }
+
+        //взяли первое имя
+        index_of_end_line = mx_get_char_index(temp, '-');
+        name = mx_strndup(temp, index_of_end_line);
+
+        //скипнули '-'
+        temp += index_of_end_line + 1;
+
+        //взяли второе имя
+        index_of_end_line = mx_get_char_index(temp, ',');
+        name2 = mx_strndup(temp, index_of_end_line);
+
+        if (mx_strcmp(name, name_1) == 0 && mx_strcmp(name2, name_2) == 0) {
+            free_all_in_read_file(NULL, NULL, name, name2, clean_up_temp);
+            return true;
+        }
+        if (mx_strcmp(name, name_2) == 0 && mx_strcmp(name2, name_1) == 0) {
+            free_all_in_read_file(NULL, NULL, name, name2, clean_up_temp);
+            return true;
+        }
+
+        free_all_in_read_file(NULL, NULL, name, name2, clean_up_temp);
+    }
+
+    return false;
+}
+
 int check_bridges_in_str(char *str) {
     char *ptr = str;
     char *temp = NULL;
@@ -40,10 +98,16 @@ int check_bridges_in_str(char *str) {
             temp = mx_strndup(ptr, index_of_end_line);
             clean_up_temp = temp;
         }
-        if (mx_strlen(temp) == 0) {
+
+        if (str_num == 2 && mx_strlen(temp) == 0) {
+            free(clean_up_temp);
             return str_num;
         }
-        if (check_line(temp) == false) {
+        else if (str_num > 2 && mx_strlen(temp) == 0) {
+            return 0;
+        }
+        if (check_line(temp, str_num) == false) {
+            free(clean_up_temp);
             return str_num;
         }
 
@@ -64,11 +128,88 @@ int check_bridges_in_str(char *str) {
     return 0;
 }
 
-bool check_line(const char *line) {
+int check_str_on_existings_free_lines(char *str) {
+    bool is_ended = false;
+    int str_num = 2;
+    char *ptr = str;
+    char *temp = NULL;
+    int bad_line = 0;
+    int index_of_end_line = 0;
+
+    while (true) {
+        ptr = mx_strchr(ptr, '\n');
+        if (ptr != NULL) {
+            ptr++;
+        }
+        else {
+            break;
+        }
+        if (mx_strlen(ptr) == 0) {
+            if (is_ended == true) {
+                return bad_line;
+            }
+            else {
+                break;
+            }
+        }
+        temp = NULL;
+        index_of_end_line = mx_get_char_index(ptr, '\n');
+        if (index_of_end_line == -1 && str_num == 2) {
+            error_printing_handle(ERR_LINE_INVALID, NULL, str_num);
+        }
+        if (index_of_end_line == -1) {
+            if (is_ended == false) {
+                is_ended = true;
+                bad_line = str_num;
+            }
+            else {
+                if (temp) free(temp);
+                return bad_line;
+            }
+            index_of_end_line = mx_get_char_index(ptr, '\0');
+            if (index_of_end_line == -1) {
+                temp = ptr;
+                if (mx_strlen(temp) != 0) {
+                    return bad_line;
+                }
+            }
+        }
+        else {
+            temp = mx_strndup(ptr, index_of_end_line);
+        }
+
+        if (check_line(temp, str_num) == false) {
+            if (temp) free(temp);
+            return str_num;
+        }
+
+        if (mx_strlen(temp) == 0) {
+            if (is_ended == false) {
+                is_ended = true;
+                bad_line = str_num;
+            }
+            else {
+                if (temp) free(temp);
+                return bad_line;
+            }
+        }
+
+        str_num++;
+        if (temp) free(temp);
+    }
+    return 0;
+}
+
+bool check_line(const char *line, int str_num) {
     bool is_alpha_found = false;
     bool is_first_word_found = false;
     bool is_second_word_found = false;
     bool is_num_found = false;
+
+    int line_len = mx_strlen(line);
+    if (line_len == 0 && str_num == 2) {
+        return false;
+    }
 
     for (int i = 0; line[i]; i++) {
         if (is_first_word_found == false) {

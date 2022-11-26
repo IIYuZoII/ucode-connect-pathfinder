@@ -25,6 +25,32 @@ void check_file_and_content_on_existing(char *filename) {
     close(fd);
 }
 
+void print_all_for_test(t_islands_list *head) {
+    t_islands_list *ptr = head;
+    int i = 0;
+    while (true) {
+        printf("%s\n", "==================================");
+        printf("head->name(%d): %s\n", i, ptr->name);
+        printf("head->index(%d): %d\n", i, ptr->index);
+        for (int i = 0; i < get_free_pos(ptr); i++) {
+            printf("%d  ", ptr->has_route[i]);
+        }
+        printf("\n");
+        for (int i = 0; i < get_free_pos(ptr); i++) {
+            printf("%d  ", ptr->distance[i]);
+        }
+        printf("\n");
+
+        printf("%s\n", "==================================");
+        printf("\n");
+        if (ptr->next == NULL) {
+            break;
+        }
+        i++;
+        ptr = ptr->next;
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) {
         error_printing_handle(ERR_INVALID_NUM_OF_ARGV, NULL, 0);
